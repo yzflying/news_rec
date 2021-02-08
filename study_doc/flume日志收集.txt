@@ -1,0 +1,41 @@
+﻿将特定目录下的日志文件/root/logs/userClick.log，实时收集保存在hdfs的hive表中；
+
+
+# 创建hive表
+# 按照日期分区，行字段分割解析格式为json，
+create table user_action(
+actionTime STRING comment "user actions time",
+readTime STRING comment "user reading time",
+channelId INT comment "article channel id",
+param map<string, string> comment "action parameter")
+COMMENT "user primitive action"
+PARTITIONED BY(dt STRING)
+ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe'
+LOCATION '/user/hive/warehouse/profile.db/user_action';
+
+hive表字段信息如下：
+actiontime              string                  from deserializer
+readtime                string                  from deserializer
+channelid               int                     from deserializer
+param                   map<string,string>      from deserializer
+dt                      string
+
+
+# 创建flume/conf/collect_click.conf文件，进行flume的source、channel、sink配置
+
+# 开启收集命令
+/root/bigdata/flume/bin/flume-ng agent -c /root/bigdata/flume/conf -f /root/bigdata/flume/conf/collect_click.conf -Dflume.root.logger=INFO,console -name a1
+将collect_click.sh脚本添加到定时监控任务
+
+# 查看相关进程
+ps aux | grep supervisord
+
+# Supervisor进程管理
+略
+
+# 将已有日志拷贝到hdfs对应目录
+hadoop dfs -put /root/data/backup/profile.db/user_action/ /user/hive/warehouse/profile.db/
+
+
+
+

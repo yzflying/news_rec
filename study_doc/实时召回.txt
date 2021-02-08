@@ -1,0 +1,43 @@
+# flume实时收集日志并流到kafka
+步骤：
+1、开启zookeeper以及kafka测试
+# 开启zookeeper，需要在服务端一直运行
+/root/bigdata/kafka/bin/zookeeper-server-start.sh -daemon /root/bigdata/kafka/config/zookeeper.properties
+# 开启kafka(主题：click-trace)
+/root/bigdata/kafka/bin/kafka-server-start.sh /root/bigdata/kafka/config/server.properties
+#开启消息生产者
+/root/bigdata/kafka/bin/kafka-console-producer.sh --broker-list 192.168.19.19092 --sync --topic click-trace
+#开启消费者
+/root/bigdata/kafka/bin/kafka-console-consumer.sh --bootstrap-server 192.168.19.137:9092 --topic
+
+2、创建flume配置文件，开启flume
+# 更新collect_click.conf文件，新增channel和sink(c2、k2)，其中c2配置与c1一致，k2流出到kafka，而不是hive分区
+
+3、开启kafka进行日志写入测试
+# 新增start_kafka.sh脚本，开启zookeeper、kafka服务
+
+4、脚本添加以及supervisor管理
+# 直接运行sh文件
+
+
+
+# 配置spark streaming信息
+1.在default.py文件中新增DefaultConfig类，指定kafka服务器地址、spark在线配置
+2.在online文件夹下新增__init__.py文件，配置StreamingContext、kafka读取
+
+
+# 基于内容推荐相似文章
+目的：对用户日志进行处理，实时达到求出相似文章，放入用户召回集合中
+步骤：
+    1、配置spark streaming信息
+    2、读取点击行为日志数据，获取相似文章列表
+    3、过滤历史文章集合
+    4、存入召回结果以及历史记录结果
+
+
+# 推荐热门文章和新文章
+
+
+
+
+

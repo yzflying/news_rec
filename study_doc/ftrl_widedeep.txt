@@ -1,0 +1,26 @@
+# ftrl算法原理
+
+# 在线学习算法
+1.针对传统梯度下降算法(全局梯度下降，batch梯度下降)处理大数据耗时较长的问题，可以采用在线学习算法
+2.在线学习算法的特点是：每来一个训练样本，就用该样本产生的loss和梯度对模型迭代一次，一个一个数据地进行训练，因此可以处理大数据量训练和在线训练
+3.在线学习算法例如：在线梯度下降（OGD）和随机梯度下降（SGD）
+
+# 梯度下降算法的缺点
+4.很难产生真正稀疏的解，稀疏性在机器学习中是很看重的事情，稀疏的特征会大大减少predict时的内存和复杂度。(即便加入L1范数，因为是浮点运算，训练出的w向量也很难出现绝对的零)
+
+
+# 基于SGD算法，在降低稀疏性上的尝试
+1.简单截断法： 参数矩阵w更新的时候，进行判断，小于阈值时直接置0
+2.TG梯度截断阀：在简单截断法的基础上，小于阈值时，进一步判断，如果小于(学习率*梯度)，置0；如果大于，将结果减去(学习率*梯度)
+3.FOBOS：在普通SGD算法的基础上，增加L1正则项(使得矩阵稀疏化)，增加一个L2范数(保证w更新结果与传统SGD算法更新的结果w相差不太大，保证算法精度)
+
+
+# ftrl算法
+在FOBOS的基础上结合RDA算法，进一步降低稀疏性
+参考：
+https://blog.csdn.net/ustbfym/article/details/79125977
+https://blog.csdn.net/china1000/article/details/51176654
+https://blog.csdn.net/weixin_33889245/article/details/85743096
+https://blog.csdn.net/weixin_33889245/article/details/85743096
+https://blog.csdn.net/a819825294/article/details/51227265
+https://blog.csdn.net/dengxing1234/article/details/73277251

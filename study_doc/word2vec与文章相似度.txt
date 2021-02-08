@@ -1,0 +1,51 @@
+# 词向量：
+one-hot表示：存储简单，容易实现；任意两个词都是孤立的，无法获取词汇之间的联系
+词向量表示：
+
+分频道进行词向量训练，每个频道一个词向量模型
+按照channel进行分类，分别进行词向量训练；同一个channel得到一个模型；只进行同一个channel类的文章相似度比较
+具体步骤：
+1.筛选某个channel的所有文章，进行分词，得到 words_df
+2.建立模型new_word2Vec，并进行训练；通过getVectors方法可以获取词向量
+3.筛选该channel的文章画像profile，得到关键词（词汇：textrank*idf），join并入对应词汇的词向量，得到_article_profile
+4.将词汇权重乘以词向量，得到"weightingVector"列；articleKeywordVectors包含"article_id", "channel_id", "keyword", "weightingVector"
+5.对"weightingVector"取平均，得到文章向量 articleVector，含属性"article_id", "channel_id", "articleVector"
+
+
+
+# 创建表，用于保存文章向量表
+CREATE TABLE article_vector(
+article_id INT comment "article_id",
+channel_id INT comment "channel_id",
+articlevector ARRAY comment "keyword");
+
+
+# 直接上传以计算好的文章向量
+hadoop dfs -put ./article_vector /user/hive/warehouse/article.db/
+
+# 计算文章相似度
+为了避免channel内文章较多，相似度计算量大，可先对每个频道的文章先进行聚类，但是聚类本身也耗计算资源；
+也可采取局部敏感哈希LSH(Locality Sensitive Hashing)
+LSH算法基于一个假设，如果两个文本在原有的数据空间是相似的，那么分别经过哈希函数转换以后的它们也具有很高的相似度
+经常使用的哈希函数，冲突总是难以避免。LSH却依赖于冲突
+
+# 相似度结果存储在hbase，实时计算
+create 'article_similar', 'similar'
+
+# 存储格式如下：key:为article_id, 'similar:article_id', 结果为相似度
+put 'article_similar', '1', 'similar:1', 0.2
+put 'article_similar', '1', 'similar:2', 0.34
+put 'article_similar', '1', 'similar:3', 0.267
+put 'article_similar', '1', 'similar:4', 0.56
+put 'article_similar', '1', 'similar:5', 0.7
+put 'article_similar', '1', 'similar:6', 0.819
+put 'article_similar', '1', 'similar:8', 0.28
+
+
+# 增量文章的相似度计算
+对每次新增的文章，计算完画像后，计算向量，在进行与历史文章相似度计算
+步骤:
+1、新文章数据，按照频道去计算文章所在频道的相似度
+2、求出新文章向量，保存
+3、BucketedRandomProjectionLSH计算相似度
+
